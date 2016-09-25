@@ -13,8 +13,7 @@ EXPOSE 8080 8442 8443
 ENV JBOSS_HOME=/opt/jboss-as-7.1.1.Final \
 	APPSRV_HOME=/opt/jboss-as-7.1.1.Final \
 	EJBCA_HOME=/opt/ejbca_ce_6_3_1_1 \
-    # db vars 
-	DB_USE_EMBEDDED=true \
+    # db vars
 	DB_USER=ejbca \
 	DB_PASSWORD=ejbca \
 	DB_URL=jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8 \
@@ -48,28 +47,20 @@ ADD [	"jboss-as-7.1.1.Final.tar.gz", \
 	"ejbcainit.sh", \
 	"jbossinit.sh", \
 	"dbinit.sh", \
+	"stop.sh", \
 	"init.sh", \
 	"/opt/"]
+
+
 
 # install prereq
 RUN rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB && \
 	yum install -y net-tools java-1.7.0-openjdk java-1.7.0-openjdk-devel ant ant-optional && \
 	groupadd ejbca && useradd ejbca -g ejbca && \
 	mv /opt/mariadb.repo /etc/yum.repos.d/ && \
-	chmod 750 /opt/init.sh && chmod 750 /opt/dbinit.sh && chmod 750 /opt/jbossinit.sh && chmod 750 /opt/ejbcainit.sh
+	rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB && \
+	yum install -y MariaDB-client && \
+	chmod 750 /opt/init.sh && chmod 750 /opt/dbinit.sh && chmod 750 /opt/jbossinit.sh && chmod 750 /opt/ejbcainit.sh && chmod 750 /opt/stop.sh && \
+	sed -i 's/jboss.bind.address.management:127.0.0.1/jboss.bind.address.management:0.0.0.0/' $APPSRV_HOME/standalone/configuration/standalone.xml
 
-# add the env for java home, once its installed
-### ENV JAVA_HOME=/usr/lib/jvm/$(ls /usr/lib/jvm/ -l | grep '^d' | awk '{print $9}')
-
-### sed -i 's/jboss.bind.address.management:127.0.0.1/jboss.bind.address.management:0.0.0.0/' $APPSRV_HOME/standalone/configuration/standalone.xml
-### /opt/jboss-as-7.1.1.Final/bin/standalone.sh -b 0.0.0.0 &
-### cd /opt/ejbca_ce_6_3_1_1
-### ant deploy
-### ant install
-### pid=$(ps -edf | grep standalone.sh | awk 'NR==1{print $2}')
-### kill -SIGINT $pid
-### /opt/jboss-as-7.1.1.Final/bin/standalone.sh -b 0.0.0.0
-### cp $EJBCA_HOME/p12/superadmin.p12 /superadmin.p12
-
-### CMD ["/bin/sh","-c","/opt/init.sh"]
 CMD ["/opt/init.sh"]
