@@ -10,9 +10,9 @@ MAINTAINER Benoit Sarda <b.sarda@free.fr>
 EXPOSE 8080 8442 8443
 
 # declare vars
-ENV JBOSS_HOME=/opt/jboss-as-7.1.1.Final \
-	APPSRV_HOME=/opt/jboss-as-7.1.1.Final \
-	EJBCA_HOME=/opt/ejbca_ce_6_3_1_1 \
+ENV JBOSS_HOME=/opt/jboss \
+	APPSRV_HOME=/opt/jboss \
+	EJBCA_HOME=/opt/ejbca \
     # db vars
 	DB_USER=ejbca \
 	DB_PASSWORD=ejbca \
@@ -44,14 +44,7 @@ ADD [	"jboss-as-7.1.1.Final.tar.gz", \
 	"mariadb-java-client-1.5.2.jar", \
 	"postgresql-9.1-903.jdbc4.jar", \
 	"mariadb.repo", \
-	"ejbcainit.sh", \
-	"jbossinit.sh", \
-	"dbinit.sh", \
-	"stop.sh", \
-	"init.sh", \
 	"/opt/"]
-
-
 
 # install prereq
 RUN rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB && \
@@ -59,8 +52,18 @@ RUN rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB && \
 	groupadd ejbca && useradd ejbca -g ejbca && \
 	mv /opt/mariadb.repo /etc/yum.repos.d/ && \
 	rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB && \
-	yum install -y MariaDB-client && \
-	chmod 750 /opt/init.sh && chmod 750 /opt/dbinit.sh && chmod 750 /opt/jbossinit.sh && chmod 750 /opt/ejbcainit.sh && chmod 750 /opt/stop.sh && \
-	sed -i 's/jboss.bind.address.management:127.0.0.1/jboss.bind.address.management:0.0.0.0/' $APPSRV_HOME/standalone/configuration/standalone.xml
+	yum install -y MariaDB-client
+
+# add files
+ADD [	"ejbcainit.sh", \
+	"jbossinit.sh", \
+	"dbinit.sh", \
+	"stop.sh", \
+	"init.sh", \
+	"jboss-modules-1.1.5.GA.jar", \
+	"/opt/"]
+
+# install prereq
+RUN chmod 750 /opt/init.sh && chmod 750 /opt/dbinit.sh && chmod 750 /opt/jbossinit.sh && chmod 750 /opt/ejbcainit.sh && chmod 750 /opt/stop.sh
 
 CMD ["/opt/init.sh"]

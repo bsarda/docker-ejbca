@@ -1,0 +1,55 @@
+#
+# configuration for 'ejbca' container
+#
+
+version: "3"
+
+services:
+  ejbca-mysql:
+    image: mariadb:10.1
+    hostname: ejbca-mysql
+    container_name: ejbca-mysql
+    env_file:
+      - secrets_sql.env
+    volumes:
+      - /srv/docker/ejbca-mysql/data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: ejbca
+      MYSQL_USER: ejbca
+      MYSQL_PASSWORD: ejbcapw
+
+  ejbca:
+    hostname: ejbca
+    container_name: ejbca
+    image: ejbca
+    ports:
+    - 8443:8443
+    volumes:
+    - /srv/docker/ejbca/etc/ejbca:/etc/ejbca
+    - /srv/docker/ejbca/opt/ejbca:/opt/ejbca
+    - /srv/docker/ejbca/opt/jboss:/opt/jboss
+    environment:
+      TZ: ${TZ:-UTC}
+
+      DB_USER: ejbca
+      DB_PASSWORD: ejbcapw
+      DB_URL: jdbc:mysql://ejbca-mysql:3306/ejbca?characterEncoding=UTF-8
+      DB_DRIVER: org.mariadb.jdbc.Driver
+      DB_NAME: mysql
+
+      EJBCA_CLI_USER: 'ejbca'
+      EJBCA_CLI_PASSWORD: 'ejbca'
+      EJBCA_KS_PASS: 'ejbca'
+      CA_NAME: 'MyCompanyCA'
+      CA_DN: 'CN=MyCompanyCA,O=MyCompany,C=US'
+      CA_KEYSPEC: '4096'
+      CA_KEYTYPE: 'RSA'
+      CA_SIGNALG: 'SHA256WithRSA'
+      CA_VALIDITY: '3650'
+      WEB_SUPERADMIN: 'admin'
+      WEB_JAVA_TRUSTPASSWORD: 'adminpw'
+      WEB_HTTP_PASSWORD: 'adminpw'
+      WEB_HTTP_HOSTNAME: 'ejbca'
+      WEB_HTTP_DN: 'CN=ejbca,O=MyCompany,C=US'
+      WEB_SELFREG: 'true'
+

@@ -47,3 +47,59 @@ also available: org.postgresql.Driver
 - WEB_HTTP_HOSTNAME => hostname of the http server => default 'localhost'  
 - WEB_HTTP_DN => DN of the http server => default 'CN=localhost,O=EJBCA,C=FR'  
 - WEB_SELFREG => enable self-service registration => default 'true'  
+
+
+## Docker Compose
+
+Check out the example docker-compose.yml. Container persistence is supported.
+
+Start up containers with:
+```
+docker-compose -f docker-compose.yml up -d
+```
+
+Stop and remove containers with:
+```
+docker-compose -f docker-compose.yml down
+```
+
+Start them up again with existing data/config:
+```
+docker-compose -f docker-compose.yml up -d
+```
+
+If you want to delete the containers persistent data just remove the persistent volumes and start again
+```
+rm -rf /srv/docker/ejbca*
+docker-compose -f docker-compose.yml up -d
+```
+ 
+ 
+
+## Persistent Volumes: 
+(assumes /srv/docker base path for persistent volumes)
+
+Mysql container db data files:
+```
+/srv/docker/ejbca-mysql/data:/var/lib/mysql
+```
+
+EJBCA Container state files:
+```
+/srv/docker/ejbca/etc/ejbca:/etc/ejbca
+```
+    
+EJBCA base directory:    
+```
+/srv/docker/ejbca/opt/ejbca:/opt/ejbca
+```
+
+JBOSS base directory:    
+```
+/srv/docker/ejbca/opt/jboss:/opt/jboss
+```
+
+When using persistent volumes, grab the superadmin.p12 directly from the docker host:
+```
+scp root@myhost://srv/docker/ejbca/opt/ejbca/p12/superadmin.p12 .
+```
